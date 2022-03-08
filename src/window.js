@@ -21,8 +21,8 @@ const { GObject, Gtk, EDataServer } = imports.gi;
 var DavidWindow = GObject.registerClass({
     GTypeName: 'DavidWindow',
     Template: 'resource:///dev/ryzokuken/david/window.ui',
-    InternalChildren: ['listBox']
-}, class DavidWindow extends Gtk.ApplicationWindow {
+    InternalChildren: ['tree']
+}, class DavidWindow extends Adw.ApplicationWindow {
     _init(application) {
         super._init({ application });
 

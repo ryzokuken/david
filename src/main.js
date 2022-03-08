@@ -20,16 +20,17 @@ pkg.initGettext();
 pkg.initFormat();
 pkg.require({
   'Gio': '2.0',
-  'Gtk': '3.0',
-  'EDataServer': '1.2'
+  'Gtk': '4.0',
+  'EDataServer': '1.2',
+  'Adw': '1'
 });
 
-const { Gio, Gtk } = imports.gi;
+const { Gio, Gtk, Adw } = imports.gi;
 
 const { DavidWindow } = imports.window;
 
 function main(argv) {
-    const application = new Gtk.Application({
+    const application = new Adw.Application({
         application_id: 'dev.ryzokuken.david',
         flags: Gio.ApplicationFlags.FLAGS_NONE,
     });
