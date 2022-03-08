@@ -16,7 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const { GObject, Gtk, EDataServer } = imports.gi;
+const { GObject, Gtk, EDataServer, Adw, GLib, Gio } = imports.gi;
+
+function sourceActionRow(source) {
+  const title = GLib.markup_escape_text(source.get_display_name(), -1);
+  const subtitle = GLib.markup_escape_text(`${source.get_uid()} P:${source.get_parent() || "NONE"}`, -1);
+  const row = new Adw.ActionRow({ title, subtitle });
+  const swtch = new Gtk.Switch({ active: source.get_enabled(), valign: Gtk.Align.CENTER });
+  row.add_suffix(swtch);
+  return row;
+}
+
+function sourceArrToList(arr) {
+  const store = Gio.ListStore.new(Adw.ActionRow);
+  arr.forEach(el => store.append(sourceActionRow(el)));
+  return store;
+}
 
 var DavidWindow = GObject.registerClass({
     GTypeName: 'DavidWindow',
@@ -28,10 +43,28 @@ var DavidWindow = GObject.registerClass({
 
         const registry = EDataServer.SourceRegistry.new_sync(null);
         const sources = registry.list_sources(null);
-        sources.forEach((source) => {
-          const label = new Gtk.Label({ label: source.get_display_name(), visible: true });
-          this._listBox.insert(label, -1);
-        });
+        /*sources.forEach((source) => {
+          const isCal = source.has_extension(EDataServer.SOURCE_EXTENSION_CALENDAR);
+          const isDAV = source.has_extension(EDataServer.SOURCE_EXTENSION_WEBDAV_BACKEND);
+          const isGOA = source.has_extension(EDataServer.SOURCE_EXTENSION_GOA);
+          const isCollection = source.has_extension(EDataServer.SOURCE_EXTENSION_COLLECTION);
+          if (true) {
+            const title = GLib.markup_escape_text(source.get_display_name(), -1);
+            const subtitle = GLib.markup_escape_text(`${source.get_uid()} P:${source.get_parent() || "NONE"}`, -1);
+            const row = new Adw.ActionRow({ title, subtitle });
+            const swtch = new Gtk.Switch({ active: source.get_enabled(), valign: Gtk.Align.CENTER });
+            row.add_suffix(swtch);
+            this._listBox.insert(row, -1);
+          }
+        });*/
+        const root = sources.filter(source => source.get_parent() === null);
+        const tree = Gtk.TreeListModel.new(
+          sourceArrToList(root), 
+          false, 
+          false, 
+          item => sourceArrToList(sources.filter(source => source.get_parent() === item.get_uid()))
+        );
+        this._tree.set_model(tree);
     }
 });
 
