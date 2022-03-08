@@ -21,9 +21,10 @@ const { GObject, Gtk, EDataServer, Adw, GLib, Gio } = imports.gi;
 function sourceActionRow(source) {
   const title = GLib.markup_escape_text(source.get_display_name(), -1);
   const subtitle = GLib.markup_escape_text(`${source.get_uid()} P:${source.get_parent() || "NONE"}`, -1);
-  const row = new Adw.ActionRow({ title, subtitle });
+  const row = new Adw.ActionRow({ title, subtitle, visible: true });
   const swtch = new Gtk.Switch({ active: source.get_enabled(), valign: Gtk.Align.CENTER });
   row.add_suffix(swtch);
+  row.get_uid = () => source.get_uid();
   return row;
 }
 
@@ -36,7 +37,7 @@ function sourceArrToList(arr) {
 var DavidWindow = GObject.registerClass({
     GTypeName: 'DavidWindow',
     Template: 'resource:///dev/ryzokuken/david/window.ui',
-    InternalChildren: ['tree']
+    InternalChildren: ['list']
 }, class DavidWindow extends Adw.ApplicationWindow {
     _init(application) {
         super._init({ application });
@@ -61,10 +62,11 @@ var DavidWindow = GObject.registerClass({
         const tree = Gtk.TreeListModel.new(
           sourceArrToList(root), 
           false, 
-          false, 
+          true, 
           item => sourceArrToList(sources.filter(source => source.get_parent() === item.get_uid()))
         );
-        this._tree.set_model(tree);
+        const selection = Gtk.SingleSelection.new(tree)
+        this._list.set_model(selection);
     }
 });
 
