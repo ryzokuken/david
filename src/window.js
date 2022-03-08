@@ -24,13 +24,12 @@ function sourceActionRow(source) {
   const row = new Adw.ActionRow({ title, subtitle, visible: true });
   const swtch = new Gtk.Switch({ active: source.get_enabled(), valign: Gtk.Align.CENTER });
   row.add_suffix(swtch);
-  row.get_uid = () => source.get_uid();
   return row;
 }
 
 function sourceArrToList(arr) {
-  const store = Gio.ListStore.new(Adw.ActionRow);
-  arr.forEach(el => store.append(sourceActionRow(el)));
+  const store = Gio.ListStore.new(EDataServer.Source);
+  arr.forEach(el => store.append(el));
   return store;
 }
 
@@ -66,6 +65,23 @@ var DavidWindow = GObject.registerClass({
           item => sourceArrToList(sources.filter(source => source.get_parent() === item.get_uid()))
         );
         const selection = Gtk.SingleSelection.new(tree)
+        const factory = new Gtk.SignalListItemFactory();
+        factory.connect("setup", (_, item) => {
+          const swtch = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+          const row = new Adw.ActionRow({ activatable_widget: swtch })
+          row.add_suffix(swtch)
+          item.set_child(row)
+        });
+        factory.connect("bind", (_, item) => {
+          const li = item.get_item().get_item();
+          const row = item.get_child();
+          row.set_title(GLib.markup_escape_text(li.get_display_name(), -1));
+          row.set_subtitle(GLib.markup_escape_text(li.get_uid(), -1));
+          if (li.get_enabled()) {
+            row.activate();
+          }
+        });
+        this._list.set_factory(factory);
         this._list.set_model(selection);
     }
 });
