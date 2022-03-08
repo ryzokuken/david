@@ -1,0 +1,7 @@
+data/dev.ryzokuken.david.desktop.in
+data/dev.ryzokuken.david.appdata.xml.in
+data/dev.ryzokuken.david.gschema.xml
+src/window.ui
+src/main.js
+src/window.js
+
